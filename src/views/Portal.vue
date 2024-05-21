@@ -44,17 +44,27 @@ const fetchVideos = async () => {
 
 const selectDay = async (date: Date) => {
   selectedDate.value = date;
+  videoUrls.value = []; // Clear existing video URLs before fetching new ones
   if (date.toISOString().split('T')[0] === '2024-05-20') {
     videoUrls.value = [
       'https://neostream.nyc3.cdn.digitaloceanspaces.com/RenzoNashville/students/initial_batch/evan_mcclure/evan_mcclure-05-20-2024_A.mp4'
     ];
   } else {
-    const response = await fetch(`/api/videos?date=${date.toISOString().split('T')[0]}`);
-    const videos: string[] = await response.json();
-    videoUrls.value = angles.map(angle => {
-      const video = videos.find((video: string) => video.includes(angle));
-      return video ? `https://neostream.nyc3.digitaloceanspaces.com/neostream/RenzoNashville/students/initial_batch/evan_mcclure/${video}` : '';
-    });
+    try {
+      const response = await fetch(`/api/videos?date=${date.toISOString().split('T')[0]}`);
+      const videos: string[] = await response.json();
+      if (videos.length) {
+        videoUrls.value = angles.map(angle => {
+          const video = videos.find((video: string) => video.includes(angle));
+          return video ? `https://neostream.nyc3.digitaloceanspaces.com/neostream/RenzoNashville/students/initial_batch/evan_mcclure/${video}` : '';
+        });
+      } else {
+        videoUrls.value = []; // No videos found for this date
+      }
+    } catch (error) {
+      console.error('Error fetching videos:', error);
+      videoUrls.value = []; // Clear video URLs on error
+    }
   }
 };
 
@@ -64,6 +74,7 @@ const logout = () => {
 
 onMounted(fetchVideos);
 </script>
+
 
 <style scoped>
 .portal {
