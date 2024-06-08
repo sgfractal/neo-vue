@@ -7,6 +7,18 @@
     </div>
     <div class="calendar-grid">
       <div
+        v-for="label in dayLabels"
+        :key="label"
+        class="calendar-day-label"
+      >
+        {{ label }}
+      </div>
+      <div
+        v-for="empty in emptyDays"
+        :key="'empty' + empty"
+        class="calendar-day empty"
+      ></div>
+      <div
         v-for="day in days"
         :key="day.date.toISOString()"
         class="calendar-day"
@@ -46,9 +58,16 @@ const days = computed(() => {
   return calendarDays;
 });
 
+const emptyDays = computed(() => {
+  const firstDayOfMonth = new Date(currentYear.value, currentMonth.value, 1).getDay();
+  return Array.from({ length: firstDayOfMonth }, (_, i) => i);
+});
+
 const monthYear = computed(() => {
   return new Date(currentYear.value, currentMonth.value).toLocaleString('default', { month: 'long', year: 'numeric' });
 });
+
+const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 const selectDay = (date: Date) => {
   selectedDate.value = date;
@@ -114,11 +133,11 @@ fetchFootageForMonth();
 <style scoped>
 .calendar {
   width: 100%;
-  max-width: 600px;
+  max-width: 400px;
   margin: auto;
   text-align: center;
   color: white;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .calendar-header {
@@ -132,9 +151,9 @@ fetchFootageForMonth();
   background: none;
   border: 2px solid white;
   color: white;
-  padding: 0.5rem 1rem;
+  padding: 0.3rem 0.6rem;
   cursor: pointer;
-  font-size: 1.2rem;
+  font-size: 1rem;
   transition: background-color 0.3s, color 0.3s;
 }
 
@@ -146,18 +165,34 @@ fetchFootageForMonth();
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 0.5rem;
+  gap: 0.3rem;
   background-color: #004e92;
-  padding: 1rem;
+  padding: 0.5rem;
   border-radius: 5px;
 }
 
+.calendar-day-label {
+  padding: 0.3rem;
+  background-color: #004e92;
+  border-radius: 5px;
+  font-weight: bold;
+}
+
 .calendar-day {
-  padding: 1rem;
+  padding: 0.6rem;
   background-color: #004e92;
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 40px; /* Ensure consistent height */
+}
+
+.calendar-day.empty {
+  background-color: transparent;
+  cursor: default;
 }
 
 .calendar-day:hover {
@@ -177,13 +212,13 @@ fetchFootageForMonth();
   border: 2px solid green;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 400px) {
   .calendar {
-    font-size: 12px;
+    font-size: 10px;
   }
 
   .calendar-header button {
-    font-size: 1rem;
+    font-size: 0.8rem;
   }
 }
 </style>
