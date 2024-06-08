@@ -13,89 +13,115 @@
       </div>
       <div v-if="userRole === 'student'">
         <h2>Your Training Footage</h2>
-        <CustomCalendar @update:date="selectDay" />
-        <div class="videos" v-if="videoUrls.length">
-          <div class="video-section" v-for="(url, index) in videoUrls" :key="index">
-            <h3>{{ angles[index] }}</h3>
+        <div v-if="!showDayView">
+          <CustomCalendar :selectedDate="selectedDate" @update:date="selectDay" />
+          <div v-if="dayWithFootage && !hourSelected" class="select-hour-message">
+            Select an hourly block to see your training footage
+          </div>
+          <div v-else-if="!dayWithFootage">
+            No Footage for this Day
+          </div>
+        </div>
+        <DayView v-else @hourSelected="handleHourSelected" @back="goBackToCalendar" />
+        <div class="videos" v-if="showDayView && hourSelected === '09:00 AM' && studentVideos.length">
+          <div class="video-section" v-for="(video, index) in studentVideos" :key="index">
+            <h3>Student {{ video.tag }}</h3>
             <video controls>
-              <source :src="url" type="video/mp4" />
+              <source :src="video.url" type="video/mp4" />
               Your browser does not support the video tag.
             </video>
           </div>
         </div>
-        <div v-else>
-          No Footage for this Day
+        <div v-else-if="showDayView && hourSelected && hourSelected !== '09:00 AM'">
+          No footage for this time block
         </div>
       </div>
       <div v-else-if="userRole === 'coach'">
         <h2>Coach Dashboard</h2>
-        <p>Manage your students and review their progress.</p>
+        <div v-if="!showDayView">
+          <CustomCalendar :selectedDate="selectedDate" @update:date="selectDay" />
+          <div v-if="dayWithFootage && !hourSelected" class="select-hour-message">
+            Select an hourly block to see your training footage
+          </div>
+          <div v-else-if="!dayWithFootage">
+            No Footage for this Day
+          </div>
+        </div>
+        <DayView v-else @hourSelected="handleHourSelected" @back="goBackToCalendar" />
+        <div class="videos" v-if="showDayView && hourSelected === '09:00 AM' && coachVideoUrl">
+          <div class="video-section">
+            <h3>Full Mat</h3>
+            <video controls>
+              <source :src="coachVideoUrl" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+        <div v-else-if="showDayView && hourSelected && hourSelected !== '09:00 AM'">
+          No footage for this time block
+        </div>
       </div>
       <div v-else-if="userRole === 'owner'">
         <h2>Owner Dashboard</h2>
-        <p>Manage your gym and overall operations.</p>
-        <button @click="addStudent">Add Student</button>
-        <button @click="addCoach">Add Coach</button>
-        <div class="management-section">
-          <h3>Students</h3>
-          <ul>
-            <li v-for="student in students" :key="student">{{ student }}</li>
-          </ul>
-          <h3>Coaches</h3>
-          <ul>
-            <li v-for="coach in coaches" :key="coach">{{ coach }}</li>
-          </ul>
-        </div>
+        <p>Under Construction</p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import Sidebar from '../components/Sidebar.vue';
 import CustomCalendar from '../components/CustomCalendar.vue';
+import DayView from '../components/DayView.vue';
 
 const router = useRouter();
 const userRole = ref<'student' | 'coach' | 'owner'>('student'); // Mock role switching
-const angles = ['Angle A', 'Angle B', 'Angle C', 'Angle D'];
-const videoUrls = ref<string[]>([]);
-const datesWithFootage = ref<Date[]>([]);
-const selectedDate = ref<Date | null>(null);
-
+const studentVideos = ref<{ tag: string, url: string }[]>([]);
+const coachVideoUrl = ref<string | null>(null);
+const selectedDate = ref<Date>(new Date());
+const hourSelected = ref<string | null>(null); // Track the selected hour block
+const showDayView = ref<boolean>(false); // Track if the day view is shown
 const students = ref<string[]>(['Evan McClure', 'Student B']);
 const coaches = ref<string[]>(['Mac McCabe', 'Coach Y']);
 
-const fetchVideos = async () => {
-  const response = await fetch('/api/videos');
-  const videos: string[] = await response.json();
-  const dates = videos.map((video: string) => {
-    const date = video.split('_')[1];
-    return new Date(date.replace(/-/g, '/'));
-  });
-  datesWithFootage.value = [...new Set(dates)];
-};
+const dayWithFootage = ref<boolean>(false);
 
-const selectDay = async (date: Date) => {
+const selectDay = (date: Date) => {
   selectedDate.value = date;
-  videoUrls.value = []; // Clear existing video URLs before fetching new ones
-  try {
-    const response = await fetch(`/api/videos?date=${date.toISOString().split('T')[0]}`);
-    const videos: string[] = await response.json();
-    if (videos.length) {
-      videoUrls.value = angles.map(angle => {
-        const video = videos.find((video: string) => video.includes(angle));
-        return video ? `https://neostream.nyc3.digitaloceanspaces.com/neostream/RenzoNashville/students/initial_batch/evan_mcclure/${video}` : '';
-      });
-    } else {
-      videoUrls.value = []; // No videos found for this date
-    }
-  } catch (error) {
-    console.error('Error fetching videos:', error);
-    videoUrls.value = []; // Clear video URLs on error
+  const selectedDateString = date.toISOString().split('T')[0];
+  dayWithFootage.value = selectedDateString === '2024-06-07';
+  hourSelected.value = null; // Reset hour selected state
+  if (selectedDateString === '2024-06-07') {
+    studentVideos.value = [
+      { tag: 'A', url: 'https://neostream.nyc3.cdn.digitaloceanspaces.com/RenzoNashville/students/initial_batch/demo/A.mp4' },
+      { tag: 'B', url: 'https://neostream.nyc3.cdn.digitaloceanspaces.com/RenzoNashville/students/initial_batch/demo/B.mp4' },
+      { tag: 'C', url: 'https://neostream.nyc3.cdn.digitaloceanspaces.com/RenzoNashville/students/initial_batch/demo/C.mp4' },
+      { tag: 'D', url: 'https://neostream.nyc3.cdn.digitaloceanspaces.com/RenzoNashville/students/initial_batch/demo/D.mp4' }
+    ];
+    coachVideoUrl.value = 'https://neostream.nyc3.cdn.digitaloceanspaces.com/RenzoNashville/students/initial_batch/demo/FullMat_Demo.mp4';
+    showDayView.value = true; // Show day view when June 7th is selected
+  } else {
+    studentVideos.value = [];
+    coachVideoUrl.value = null;
+    showDayView.value = false; // Hide day view for other dates
   }
 };
+
+const handleHourSelected = (time: string) => {
+  hourSelected.value = time;
+};
+
+const goBackToCalendar = () => {
+  showDayView.value = false;
+  selectDay(selectedDate.value); // Re-select the date to refresh the state
+};
+
+watch(userRole, (newRole) => {
+  // Reset to today's date when switching roles
+  selectDay(new Date());
+});
 
 const logout = () => {
   router.push('/');
@@ -112,8 +138,6 @@ const addStudent = () => {
 const addCoach = () => {
   coaches.value.push(`Coach ${coaches.value.length + 1}`);
 };
-
-onMounted(fetchVideos);
 </script>
 
 <style scoped>
@@ -196,10 +220,12 @@ video {
   background-color: #6772e5;
   color: white;
   border-radius: 5px;
+  transition: background-color 0.3s, color 0.3s;
 }
 
 .role-switcher button.active {
-  background-color: #5469d4;
+  background-color: #ffcc00;
+  color: #000428;
 }
 
 .management-section {
@@ -221,6 +247,13 @@ video {
   margin: 0.5rem 0;
   padding: 0.5rem;
   border-radius: 5px;
+}
+
+.select-hour-message {
+  font-size: 16px;
+  color: #ffcc00;
+  text-align: center;
+  margin: 2rem 0;
 }
 
 @media (max-width: 600px) {

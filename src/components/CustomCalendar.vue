@@ -33,7 +33,6 @@
 
 <script setup lang="ts">
 import { ref, computed, defineEmits, watch } from 'vue';
-import axios from 'axios';
 
 const emit = defineEmits(['update:date']);
 
@@ -42,7 +41,9 @@ const selectedDate = ref(new Date(today.getFullYear(), today.getMonth(), today.g
 const currentMonth = ref(today.getMonth());
 const currentYear = ref(today.getFullYear());
 
-const footageDates = ref<Date[]>([]);
+const footageDates = ref<Date[]>([
+  new Date('2024-06-07') // Hardcoded for demo purposes
+]);
 
 const days = computed(() => {
   const endOfMonth = new Date(currentYear.value, currentMonth.value + 1, 0);
@@ -106,21 +107,10 @@ const isSelectedDay = (date: Date) => {
          date.getFullYear() === selectedDate.value.getFullYear();
 };
 
-// Fetch footage for the current month
+// Placeholder for fetching footage for the current month
 const fetchFootageForMonth = async () => {
-  try {
-    const startDate = new Date(currentYear.value, currentMonth.value, 1).toISOString();
-    const endDate = new Date(currentYear.value, currentMonth.value + 1, 0).toISOString();
-    const response = await axios.get(`https://neostream.nyc3.digitaloceanspaces.com/footage?start_date=${startDate}&end_date=${endDate}`, {
-      headers: {
-        'Authorization': `AWS DO00R2MDX9Z6CGKLW6Q7:reKDR/BsrYO/1au6u0gYoXxs00Vrv4+hznLCrM/LAJ8`
-      }
-    });
-    // Assuming the response contains an array of dates with footage
-    footageDates.value = response.data.map((dateString: string) => new Date(dateString));
-  } catch (error) {
-    console.error('Error fetching footage:', error);
-  }
+  // Placeholder logic for fetching footage
+  // For demo purposes, this function is empty
 };
 
 // Watch for changes in the current month or year and fetch footage accordingly
@@ -209,7 +199,7 @@ fetchFootageForMonth();
 }
 
 .has-footage {
-  border: 2px solid green;
+  background-color: rgba(144, 238, 144, 0.3); /* Very light green */
 }
 
 @media (max-width: 400px) {
