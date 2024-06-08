@@ -3,7 +3,7 @@
     <Sidebar />
     <div class="content">
       <div class="header">
-        <h1>Welcome, Evan</h1>
+        <h1>Welcome to the Neo Combat Lab Demo</h1>
         <button @click="logout" class="logout-button">Logout</button>
       </div>
       <div class="role-switcher">
@@ -83,8 +83,6 @@ const coachVideoUrl = ref<string | null>(null);
 const selectedDate = ref<Date>(new Date());
 const hourSelected = ref<string | null>(null); // Track the selected hour block
 const showDayView = ref<boolean>(false); // Track if the day view is shown
-const students = ref<string[]>(['Evan McClure', 'Student B']);
-const coaches = ref<string[]>(['Mac McCabe', 'Coach Y']);
 
 const dayWithFootage = ref<boolean>(false);
 
@@ -118,7 +116,7 @@ const goBackToCalendar = () => {
   selectDay(selectedDate.value); // Re-select the date to refresh the state
 };
 
-watch(userRole, (newRole) => {
+watch(userRole, () => {
   // Reset to today's date when switching roles
   selectDay(new Date());
 });
@@ -129,14 +127,6 @@ const logout = () => {
 
 const setUserRole = (role: 'student' | 'coach' | 'owner') => {
   userRole.value = role;
-};
-
-const addStudent = () => {
-  students.value.push(`Student ${students.value.length + 1}`);
-};
-
-const addCoach = () => {
-  coaches.value.push(`Coach ${coaches.value.length + 1}`);
 };
 </script>
 

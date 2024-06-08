@@ -30,7 +30,7 @@ const emit = defineEmits(['hourSelected', 'back']);
 const hours = ref<Array<{ time: string, hasFootage: boolean }>>([]);
 const selectedHour = ref<string | null>(null);
 
-const initializeHours = (date: Date) => {
+const initializeHours = () => {
   // Hardcoded footage available at 9 AM
   const footageHours = ['09:00 AM'];
   hours.value = Array.from({ length: 16 }, (_, i) => {
@@ -51,7 +51,7 @@ const goBack = () => {
 const amHours = computed(() => hours.value.filter(hour => hour.time.includes('AM')));
 const pmHours = computed(() => hours.value.filter(hour => hour.time.includes('PM')));
 
-initializeHours(new Date());
+initializeHours();
 </script>
 
 <style scoped>
