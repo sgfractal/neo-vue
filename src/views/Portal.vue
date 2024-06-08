@@ -1,6 +1,5 @@
 <template>
   <div class="portal">
-    <Sidebar />
     <div class="content">
       <div class="header">
         <h1>Welcome to the Neo Combat Lab Demo</h1>
@@ -72,7 +71,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import Sidebar from '../components/Sidebar.vue';
 import CustomCalendar from '../components/CustomCalendar.vue';
 import DayView from '../components/DayView.vue';
 
@@ -143,6 +141,8 @@ const setUserRole = (role: 'student' | 'coach' | 'owner') => {
   color: white;
   font-family: 'Arial', sans-serif;
   overflow-y: auto;
+  margin: 0; /* Ensure there is no margin around the content */
+  box-sizing: border-box; /* Ensure padding is included in the element's total width and height */
 }
 
 .header {
@@ -200,6 +200,7 @@ video {
   display: flex;
   gap: 1rem;
   margin-bottom: 2rem;
+  flex-wrap: wrap; /* Ensure buttons wrap on smaller screens */
 }
 
 .role-switcher button {
@@ -216,27 +217,6 @@ video {
 .role-switcher button.active {
   background-color: #ffcc00;
   color: #000428;
-}
-
-.management-section {
-  margin-top: 2rem;
-}
-
-.management-section h3 {
-  margin-top: 1rem;
-}
-
-.management-section ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-.management-section li {
-  background: #fff;
-  color: #000;
-  margin: 0.5rem 0;
-  padding: 0.5rem;
-  border-radius: 5px;
 }
 
 .select-hour-message {
@@ -258,6 +238,15 @@ video {
 
   video {
     max-width: 100%;
+  }
+
+  .header h1 {
+    font-size: 1.2rem; /* Adjust font size for smaller screens */
+  }
+
+  .role-switcher button {
+    padding: 0.3rem 0.5rem; /* Adjust button padding for smaller screens */
+    font-size: 0.8rem;
   }
 }
 </style>
